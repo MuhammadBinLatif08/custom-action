@@ -1,10 +1,19 @@
 name: 'Get and Cache Dependencies'
 description: 'Install and cache node_modules using actions/cache'
-
+inputs:
+  caching:
+    description: 'Whether to cache the dependencies or not'
+    required: true
+    default: "true"
+outputs:
+  used_cache: 
+    description: 'Wehter the cache was used or not. Not your input but from the action'
+    value: ${{steps.install.outputs.cache}}
 runs:
   using: 'composite'
   steps:
     - name: Use cached dependencies
+      if: inputs.caching == 'true'
       uses: actions/cache@v4
       with:
         path: node_modules
@@ -13,5 +22,8 @@ runs:
           node-deps-
 
     - name: Install dependencies
-      run: npm ci
+      id: install
+      run:  |
+       npm ci
+       echo "cache=${{inputs.caching}}" >> GITHUB_OUTPUT
       shell: bash
